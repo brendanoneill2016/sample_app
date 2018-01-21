@@ -7,10 +7,20 @@ class UsersController < ApplicationController
 
   def index
     @users = User.paginate(page: params[:page])
+
+    @users_csv = User.all.order(:id)
+    respond_to do |format|
+      format.html
+      format.csv { send_data @users_csv.to_csv, filename: "users-#{Date.today}.csv" }
+    end
+
+
   end
 
   def show
 	  @user = User.find(params[:id])
+    @microposts = @user.microposts.paginate(page: params[:page])
+
   end
   
   def new
@@ -61,14 +71,6 @@ class UsersController < ApplicationController
     end
 
 
-    # Confirms a logged-in user.
-    def logged_in_user
-      unless logged_in?
-        store_location
-        flash[:danger] = "Please log in."
-        redirect_to login_url
-      end
-    end
 
     # Confirms the correct user.
     def correct_user
